@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration
 class ObjectMapperConfig {
 
     @Bean
-    public fun objectMapper() : ObjectMapper {
+    fun objectMapper() : ObjectMapper {
         return jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     }
 }
