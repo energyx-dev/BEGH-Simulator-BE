@@ -1,27 +1,28 @@
 package kr.co.beghsimulator.service
 
 import kr.co.beghsimulator.dto.request.SimulateRequest
-import kr.co.beghsimulator.dto.input.Geometry
-import kr.co.beghsimulator.dto.output.DGBuilding
+import kr.co.beghsimulator.simulator.input.Geometry
+import kr.co.beghsimulator.simulator.output.DGBuilding
 import kr.co.beghsimulator.dto.response.SimulateResponse
-import kr.co.beghsimulator.repository.SimulateRepository
+import kr.co.beghsimulator.simulator.Simulator
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
+import java.io.File
 
 @Service
 class SimulateService(
-    private val simulateRepository: SimulateRepository,
+    private val simulator: Simulator,
     private val fileService: FileService,
 ) {
 
     private val log = KotlinLogging.logger { }
 
-    fun simulateJson(request: SimulateRequest) : SimulateResponse {
-        val data: Geometry = fileService.readFile(request.absolutePath)
+    fun readFileAndSimulate(request: SimulateRequest) : SimulateResponse {
+        val data: Geometry = fileService.readFile(request.absolutePath, Geometry::class.java)
 
-        val result: DGBuilding = simulateRepository.simulate(data)
+        val result: DGBuilding = simulator.execute(data)
 
-        val file = fileService.writeFile(result)
+        val file: File = fileService.writeFile(result)
 
         return SimulateResponse.from(result, file)
     }

@@ -1,16 +1,16 @@
-package kr.co.beghsimulator.repository
+package kr.co.beghsimulator.simulator
 
-import kr.co.beghsimulator.dto.input.Geometry
-import kr.co.beghsimulator.dto.output.DGBuilding
+import kr.co.beghsimulator.simulator.input.Geometry
+import kr.co.beghsimulator.simulator.output.DGBuilding
 import mu.KotlinLogging
-import org.springframework.stereotype.Repository
+import org.springframework.stereotype.Component
 
-@Repository
-class SimulateRepository {
+@Component
+class Simulator {
 
     private val log = KotlinLogging.logger { }
 
-    fun simulate(geometry: Geometry) : DGBuilding {
+    fun execute(geometry: Geometry) : DGBuilding {
         val result = DGBuilding(
             name = "Test Building",
             northAxis = 0,

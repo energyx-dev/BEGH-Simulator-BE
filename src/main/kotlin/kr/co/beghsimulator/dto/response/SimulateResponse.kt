@@ -1,6 +1,6 @@
 package kr.co.beghsimulator.dto.response
 
-import kr.co.beghsimulator.dto.output.DGBuilding
+import kr.co.beghsimulator.simulator.output.DGBuilding
 import java.io.File
 
 data class SimulateResponse(

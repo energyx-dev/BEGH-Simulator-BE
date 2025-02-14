@@ -1,4 +1,4 @@
-package kr.co.beghsimulator.dto.input.geometry
+package kr.co.beghsimulator.simulator.input.geometry
 
 data class Zone(
     val id: String?,
