@@ -1,6 +1,6 @@
-package kr.co.beghsimulator.dto.input
+package kr.co.beghsimulator.simulator.input
 
-import kr.co.beghsimulator.dto.input.geometry.Floor
+import kr.co.beghsimulator.simulator.input.geometry.Floor
 
 data class Geometry(
     val floors: List<Floor?>?,

@@ -1,4 +1,4 @@
-package kr.co.beghsimulator.dto.output
+package kr.co.beghsimulator.simulator.output
 
 
 data class DGBuilding(

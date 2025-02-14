@@ -1,4 +1,4 @@
-package kr.co.beghsimulator.dto.input.geometry
+package kr.co.beghsimulator.simulator.input.geometry
 
 import java.math.BigDecimal
 

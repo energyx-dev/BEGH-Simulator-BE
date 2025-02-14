@@ -1,8 +1,8 @@
 package kr.co.beghsimulator.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kr.co.beghsimulator.dto.input.Geometry
-import kr.co.beghsimulator.dto.output.DGBuilding
+import kr.co.beghsimulator.simulator.input.Geometry
+import kr.co.beghsimulator.simulator.output.DGBuilding
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.io.File
@@ -14,13 +14,13 @@ class FileService(
 
     private val log = KotlinLogging.logger { }
 
-    fun readFile(absolutePath: String) : Geometry {
-        val data: Geometry = objectMapper.readValue(File(absolutePath), Geometry::class.java)
+    fun <T> readFile(absolutePath: String, type: Class<T>) : T {
+        val data: T = objectMapper.readValue(File(absolutePath), type)
         log.info { "file read : $data" }
         return data
     }
 
-    fun writeFile(result: DGBuilding) : File {
+    fun <T> writeFile(result: T) : File {
         val currentDir = System.getProperty("user.dir")
         val fileName = "output_${System.currentTimeMillis()}.json"
 
