@@ -16,8 +16,8 @@ class SimulateController(
     private val simulateService: SimulateService
 ) {
     @PostMapping
-    fun readFileAndSimulate(@Valid request: SimulateRequest) : ResponseEntity<SimulateResponse> {
-        val result = simulateService.readFileAndSimulate(request)
+    fun simulate(@Valid request: SimulateRequest) : ResponseEntity<SimulateResponse> {
+        val result = simulateService.simulate(request)
 
         return ResponseEntity.ok(result)
     }

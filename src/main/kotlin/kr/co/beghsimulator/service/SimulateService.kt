@@ -17,13 +17,13 @@ class SimulateService(
 
     private val log = KotlinLogging.logger { }
 
-    fun readFileAndSimulate(request: SimulateRequest) : SimulateResponse {
+    fun simulate(request: SimulateRequest) : SimulateResponse {
         val data: Geometry = fileService.readFile(request.absolutePath, Geometry::class.java)
 
         val result: DGBuilding = simulator.execute(data)
 
-        val file: File = fileService.writeFile(result)
+        val resultFile: File = fileService.writeFile(result)
 
-        return SimulateResponse.from(result, file)
+        return SimulateResponse.from(result, resultFile)
     }
 }
