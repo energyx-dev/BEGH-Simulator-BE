@@ -20,10 +20,9 @@ class SimulateService(
     fun simulate(request: SimulateRequest) : SimulateResponse {
         val data: Geometry = fileService.readFile(request.absolutePath, Geometry::class.java)
 
-        val result: DGBuilding = simulator.execute(data)
+        val resultFile = simulator.execute(data)
+        val resultData = fileService.readFile(resultFile, DGBuilding::class.java)
 
-        val resultFile: File = fileService.writeFile(result)
-
-        return SimulateResponse.from(result, resultFile)
+        return SimulateResponse.from(resultData, resultFile)
     }
 }
