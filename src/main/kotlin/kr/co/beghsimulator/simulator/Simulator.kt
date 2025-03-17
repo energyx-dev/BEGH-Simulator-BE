@@ -1,5 +1,6 @@
 package kr.co.beghsimulator.simulator
 
+import kotlinx.coroutines.*
 import kr.co.beghsimulator.simulator.enums.OS
 import kr.co.beghsimulator.simulator.input.Geometry
 import mu.KotlinLogging
@@ -15,10 +16,11 @@ class Simulator {
     private val log = KotlinLogging.logger { }
 
     fun execute(geometry: Geometry): File {
-        try {
-            val processBuilder = setProcessBuilder(getOsType())
 
-            val resultFilePath = executePython(processBuilder)
+        try {
+            val processBuilder: ProcessBuilder = setProcessBuilder()
+
+            val resultFilePath: String = runBlocking { executePython(processBuilder) }
 
             return File(resultFilePath)
         } catch (e: Exception) {
@@ -26,18 +28,9 @@ class Simulator {
         }
     }
 
-
-    fun getOsType(): OS {
-        val osName = System.getProperty("os.name").lowercase()
-        when {
-            osName.contains("win") -> return OS.WIN
-            osName.contains("mac") -> return OS.MAC
-            else -> throw RuntimeException("win 배포 환경, mac 개발 환경에서만 실행이 가능합니다.")
-        }
-    }
-
-    fun setProcessBuilder(os: OS): ProcessBuilder {
+    private fun setProcessBuilder(): ProcessBuilder {
         val curDir: String = System.getProperty("user.dir")
+        val os = OS.getOS()
 
         val pythonDir: String = when(os) {
             OS.WIN -> "$curDir\\python\\python3\\python.exe"
@@ -52,28 +45,27 @@ class Simulator {
         log.info { "dir : $pythonDir" }
         log.info { "script : $pythonScript" }
 
-
         return ProcessBuilder(pythonDir, pythonScript)
             .redirectErrorStream(true)
     }
 
-    fun executePython(processBuilder: ProcessBuilder) : String {
-        val process = processBuilder.start()
+    private suspend fun executePython(processBuilder: ProcessBuilder): String {
+        var resultFilePath: String? = null
 
-        val reader = BufferedReader(InputStreamReader(process.inputStream, "UTF-8"))
-        lateinit var resultFilePath: String
+        withContext(Dispatchers.IO) {
+            val process = processBuilder.start()
 
-        while (true) {
-            val line = reader.readLine() ?: break
-            resultFilePath = line
+            BufferedReader(InputStreamReader(process.inputStream, "UTF-8")).use { reader ->
+                reader.forEachLine { line -> resultFilePath = line }
+            }
+
+            val exitCode: Int = process.waitFor()
+            when (exitCode) {
+                0 -> println("Python 실행 완료")
+                else -> throw RuntimeException("Python 실행 중 오류 발생 (코드: $exitCode)")
+            }
         }
 
-        val exitCode: Int = process.waitFor()
-        when (exitCode) {
-            0 -> println("Python 실행 완료")
-            else -> throw RuntimeException("Python 실행 중 오류 발생 (코드: $exitCode)")
-        }
-
-        return resultFilePath
+        return resultFilePath ?: throw RuntimeException("Python 실행 결과가 없음")
     }
 }

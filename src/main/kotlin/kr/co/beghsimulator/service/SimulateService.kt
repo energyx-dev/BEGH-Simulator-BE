@@ -7,7 +7,6 @@ import kr.co.beghsimulator.dto.response.SimulateResponse
 import kr.co.beghsimulator.simulator.Simulator
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.io.File
 
 @Service
 class SimulateService(
@@ -18,6 +17,7 @@ class SimulateService(
     private val log = KotlinLogging.logger { }
 
     fun simulate(request: SimulateRequest) : SimulateResponse {
+
         val data: Geometry = fileService.readFile(request.absolutePath, Geometry::class.java)
 
         val resultFile = simulator.execute(data)
