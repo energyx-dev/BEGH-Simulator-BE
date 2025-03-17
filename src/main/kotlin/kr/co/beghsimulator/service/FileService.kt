@@ -14,9 +14,15 @@ class FileService(
 
     private val log = KotlinLogging.logger { }
 
+    fun <T> readFile(file: File, type: Class<T>): T {
+        val data: T = objectMapper.readValue(file, type)
+        log.info { "read file : $data" }
+        return data
+    }
+
     fun <T> readFile(absolutePath: String, type: Class<T>) : T {
         val data: T = objectMapper.readValue(File(absolutePath), type)
-        log.info { "file read : $data" }
+        log.info { "read file by path : $data" }
         return data
     }
 
