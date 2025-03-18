@@ -1,8 +1,6 @@
 package kr.co.beghsimulator.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kr.co.beghsimulator.simulator.input.Geometry
-import kr.co.beghsimulator.simulator.output.DGBuilding
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.io.File

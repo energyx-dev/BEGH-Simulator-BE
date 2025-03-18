@@ -15,7 +15,7 @@ import java.io.InputStreamReader
 @Component
 class RemodelingSimulator(
     val fileService: FileService
-) : ISimulator<GreenRemodeling> {
+) : ISimulator {
     private val log = KotlinLogging.logger { }
 
     override fun execute(data: Geometry): GreenRemodeling {
