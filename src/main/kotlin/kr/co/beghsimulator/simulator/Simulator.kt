@@ -1,6 +1,7 @@
 package kr.co.beghsimulator.simulator
 
 import kotlinx.coroutines.*
+import kr.co.beghsimulator.service.FileService
 import kr.co.beghsimulator.simulator.enums.OS
 import kr.co.beghsimulator.simulator.input.Geometry
 import mu.KotlinLogging
@@ -11,41 +12,33 @@ import java.io.InputStreamReader
 
 
 @Component
-class Simulator {
-
+class Simulator (
+  val fileService: FileService
+) {
     private val log = KotlinLogging.logger { }
 
-    fun execute(geometry: Geometry): File {
+    fun execute(geometry: Geometry): List<String> = runBlocking {
+        val processBuilders: List<ProcessBuilder> = listOf(
+            setProcessBuilder(geometry),
+            setProcessBuilder(geometry),
+            setProcessBuilder(geometry)
+        )
 
-        try {
-            val processBuilder: ProcessBuilder = setProcessBuilder()
-
-            val resultFilePath: String = runBlocking { executePython(processBuilder) }
-
-            return File(resultFilePath)
-        } catch (e: Exception) {
-            throw RuntimeException("python 실행 오류", e)
+        val deferredResults: List<Deferred<String>> = processBuilders.map { processBuilder ->
+            async(Dispatchers.IO) { executePython(processBuilder) }
         }
+
+        deferredResults.awaitAll()
     }
 
-    private fun setProcessBuilder(): ProcessBuilder {
-        val curDir: String = System.getProperty("user.dir")
-        val os = OS.getOS()
+    private fun setProcessBuilder(data: Geometry): ProcessBuilder {
+        val tmpFile: File = fileService.writeTmpFile(data)
+        val pythonDir: String = OS.getPythonDir()
+        val pythonScript: String = OS.getPythonScript()
 
-        val pythonDir: String = when(os) {
-            OS.WIN -> "$curDir\\python\\python3\\python.exe"
-            OS.MAC -> "python3"
-        }
+        log.info { "file : ${tmpFile.absolutePath}" }
 
-        val pythonScript: String = when(os) {
-            OS.WIN -> "$curDir\\python\\simulator.py"
-            OS.MAC -> "$curDir/python/simulator.py"
-        }
-
-        log.info { "dir : $pythonDir" }
-        log.info { "script : $pythonScript" }
-
-        return ProcessBuilder(pythonDir, pythonScript)
+        return ProcessBuilder(pythonDir, pythonScript, tmpFile.absolutePath)
             .redirectErrorStream(true)
     }
 
@@ -56,7 +49,9 @@ class Simulator {
             val process = processBuilder.start()
 
             BufferedReader(InputStreamReader(process.inputStream, "UTF-8")).use { reader ->
-                reader.forEachLine { line -> resultFilePath = line }
+                reader.forEachLine { line ->
+                    resultFilePath = line
+                }
             }
 
             val exitCode: Int = process.waitFor()
@@ -66,6 +61,6 @@ class Simulator {
             }
         }
 
-        return resultFilePath ?: throw RuntimeException("Python 실행 결과가 없음")
+        return resultFilePath ?: throw RuntimeException("Python 실행 결과 오류")
     }
 }
