@@ -1,17 +1,16 @@
 package kr.co.beghsimulator.dto.response
 
 import kr.co.beghsimulator.simulator.output.DGBuilding
-import java.io.File
 
 data class SimulateResponse(
-    val result: DGBuilding,
-    val resultFile: String,
+    val results: List<DGBuilding>,
+    val resultFiles: List<String>
 ) {
     companion object {
-        fun from(result: DGBuilding, file: File): SimulateResponse {
+        fun from(results: List<DGBuilding>, filePaths: List<String>): SimulateResponse {
             return SimulateResponse(
-                result = result,
-                resultFile = file.absolutePath
+                results = results,
+                resultFiles = filePaths
             )
         }
     }
