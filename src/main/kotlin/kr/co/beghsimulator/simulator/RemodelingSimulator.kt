@@ -2,26 +2,46 @@ package kr.co.beghsimulator.simulator
 
 import kotlinx.coroutines.*
 import kr.co.beghsimulator.service.FileService
-import kr.co.beghsimulator.simulator.enums.OS
 import kr.co.beghsimulator.simulator.input.Geometry
+import kr.co.beghsimulator.simulator.output.DGBuilding
+import kr.co.beghsimulator.simulator.output.GreenRemodeling
+import kr.co.beghsimulator.simulator.util.PythonUtil
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 
-
 @Component
-class Simulator (
-  val fileService: FileService
-) {
+class RemodelingSimulator(
+    val fileService: FileService
+) : ISimulator<GreenRemodeling> {
     private val log = KotlinLogging.logger { }
 
-    fun execute(geometry: Geometry): List<String> = runBlocking {
+    override fun execute(data: Geometry): GreenRemodeling {
+        val result = executePython(data)
+        return analyze(result)
+    }
+
+    private fun analyze(paths: List<String>): GreenRemodeling {
+        val results = mutableListOf<DGBuilding>()
+
+        paths.forEach { path ->
+            val result: DGBuilding = fileService.readFile(path, DGBuilding::class.java)
+            results.add(result)
+        }
+
+        return GreenRemodeling.from(results, paths)
+    }
+
+    private fun executePython(geometry: Geometry): List<String> = runBlocking {
+        val python: String = PythonUtil.getPython()
+        val script: String = PythonUtil.getScript()
+
         val processBuilders: List<ProcessBuilder> = listOf(
-            setProcessBuilder(geometry),
-            setProcessBuilder(geometry),
-            setProcessBuilder(geometry)
+            setProcessBuilder(geometry, python, script),
+            setProcessBuilder(geometry, python, script),
+            setProcessBuilder(geometry, python, script)
         )
 
         val deferredResults: List<Deferred<String>> = processBuilders.map { processBuilder ->
@@ -31,11 +51,8 @@ class Simulator (
         deferredResults.awaitAll()
     }
 
-    private fun setProcessBuilder(data: Geometry): ProcessBuilder {
+    private fun setProcessBuilder(data: Geometry, pythonDir: String, pythonScript: String): ProcessBuilder {
         val tmpFile: File = fileService.writeTmpFile(data)
-        val pythonDir: String = OS.getPythonDir()
-        val pythonScript: String = OS.getPythonScript()
-
         log.info { "file : ${tmpFile.absolutePath}" }
 
         return ProcessBuilder(pythonDir, pythonScript, tmpFile.absolutePath)
