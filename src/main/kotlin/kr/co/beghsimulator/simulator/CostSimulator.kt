@@ -1,7 +1,8 @@
 package kr.co.beghsimulator.simulator
 
-import kr.co.beghsimulator.simulator.input.Geometry
-import kr.co.beghsimulator.simulator.output.Cost
+import kr.co.beghsimulator.service.ISimulator
+import kr.co.beghsimulator.dto.request.BuildingRequest
+import kr.co.beghsimulator.simulator.output.CostOutput
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
@@ -9,7 +10,7 @@ import java.math.BigDecimal
 class CostSimulator (
 
 ) : ISimulator {
-    override fun execute(data: Geometry): Cost {
-        return Cost.from(BigDecimal.TEN, BigDecimal.ONE)
+    override fun execute(data: BuildingRequest): CostOutput {
+        return CostOutput.from(BigDecimal.TEN, BigDecimal.ONE)
     }
 }

@@ -16,7 +16,7 @@ class SimulateController(
 ) {
     @PostMapping
     fun simulate(@Valid request: SimulateRequest) : ResponseEntity<SimulateResponse> {
-        val result = simulateService.simulate(request)
+        val result = simulateService.execute(request)
 
         return ResponseEntity.ok(result)
     }

@@ -1,8 +1,8 @@
-package kr.co.beghsimulator.simulator.input
+package kr.co.beghsimulator.dto.request
 
-import kr.co.beghsimulator.simulator.input.geometry.Floor
+import kr.co.beghsimulator.simulator.input.building.Floor
 
-data class Geometry(
+data class BuildingRequest(
     val floors: List<Floor?>?,
     val name: String?,
     val northAxis: Int?,

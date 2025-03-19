@@ -1,4 +1,4 @@
-package kr.co.beghsimulator.simulator.input.geometry
+package kr.co.beghsimulator.simulator.input.building
 
 data class Floor(
     val floorHeight: Double?,

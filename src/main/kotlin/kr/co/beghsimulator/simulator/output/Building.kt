@@ -1,7 +1,7 @@
 package kr.co.beghsimulator.simulator.output
 
 
-data class DGBuilding(
+data class Building(
     val address: String?,
     val name: String?,
     val northAxis: Int?,
