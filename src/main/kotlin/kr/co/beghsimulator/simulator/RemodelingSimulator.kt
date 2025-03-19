@@ -44,11 +44,9 @@ class RemodelingSimulator(
             setProcessBuilder(geometry, python, script)
         )
 
-        val deferredResults: List<Deferred<String>> = processBuilders.map { processBuilder ->
+        return@runBlocking processBuilders.map { processBuilder ->
             async(Dispatchers.IO) { executePython(processBuilder) }
-        }
-
-        deferredResults.awaitAll()
+        }.awaitAll()
     }
 
     private fun setProcessBuilder(data: Geometry, pythonDir: String, pythonScript: String): ProcessBuilder {

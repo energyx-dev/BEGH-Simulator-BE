@@ -1,5 +1,9 @@
 package kr.co.beghsimulator.service
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import kr.co.beghsimulator.dto.request.SimulateRequest
 import kr.co.beghsimulator.dto.response.SimulateResponse
 import kr.co.beghsimulator.simulator.input.Geometry
@@ -16,16 +20,20 @@ class SimulateService(
 ) {
     private val log = KotlinLogging.logger { }
 
-    fun simulate(request: SimulateRequest): SimulateResponse {
+    fun simulate(request: SimulateRequest): SimulateResponse = runBlocking {
         val data: Geometry = fileService.readFile(request.absolutePath, Geometry::class.java)
 
-        val results: List<IOutput> = simulators.map { simulator ->
-            simulator.execute(data)
-        }
+        val results: List<IOutput> = runBlocking {
+            simulators.map { simulator ->
+                async {
+                    simulator.execute(data)
+                }
+            }
+        }.awaitAll()
 
         val result = SimulateResult.from(results)
         val resultFile = fileService.writeFile(result)
 
-        return SimulateResponse.from(resultFile)
+        return@runBlocking SimulateResponse.from(resultFile)
     }
 }
