@@ -2,9 +2,12 @@ package kr.co.beghsimulator.simulator
 
 import kotlinx.coroutines.*
 import kr.co.beghsimulator.service.FileService
-import kr.co.beghsimulator.simulator.input.Geometry
-import kr.co.beghsimulator.simulator.output.DGBuilding
-import kr.co.beghsimulator.simulator.output.GreenRemodeling
+import kr.co.beghsimulator.service.ISimulator
+import kr.co.beghsimulator.dto.request.BuildingRequest
+import kr.co.beghsimulator.simulator.input.NormalInput
+import kr.co.beghsimulator.simulator.input.RemodelingInput
+import kr.co.beghsimulator.simulator.output.Building
+import kr.co.beghsimulator.simulator.output.BuildingOutput
 import kr.co.beghsimulator.simulator.util.PythonUtil
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -18,42 +21,53 @@ class RemodelingSimulator(
 ) : ISimulator {
     private val log = KotlinLogging.logger { }
 
-    override fun execute(data: Geometry): GreenRemodeling {
+    override fun execute(data: BuildingRequest): BuildingOutput {
         val result = executePython(data)
         return analyze(result)
     }
 
-    private fun analyze(paths: List<String>): GreenRemodeling {
-        val results = mutableListOf<DGBuilding>()
+    private fun analyze(paths: List<String>): BuildingOutput {
+        val results = mutableListOf<Building>()
 
         paths.forEach { path ->
-            val result: DGBuilding = fileService.readFile(path, DGBuilding::class.java)
+            val result: Building = fileService.readFile(path, Building::class.java)
             results.add(result)
         }
 
-        return GreenRemodeling.from(results, paths)
+        return BuildingOutput.from(results, paths)
     }
 
-    private fun executePython(geometry: Geometry): List<String> = runBlocking {
-        val python: String = PythonUtil.getPython()
-        val script: String = PythonUtil.getScript()
-
-        val processBuilders: List<ProcessBuilder> = listOf(
-            setProcessBuilder(geometry, python, script),
-            setProcessBuilder(geometry, python, script),
-            setProcessBuilder(geometry, python, script)
-        )
+    private fun executePython(buildingRequest: BuildingRequest): List<String> = runBlocking {
+        val processBuilders: List<ProcessBuilder> = setProcessBuilders(buildingRequest)
 
         return@runBlocking processBuilders.map { processBuilder ->
             async(Dispatchers.IO) { executePython(processBuilder) }
         }.awaitAll()
     }
 
-    private fun setProcessBuilder(data: Geometry, pythonDir: String, pythonScript: String): ProcessBuilder {
+    private fun setProcessBuilders(data: BuildingRequest): List<ProcessBuilder> {
+        val python: String = PythonUtil.getPython()
+        val script: String = PythonUtil.getScript()
+
+        return listOf(
+            setProcessBuilder(
+                data = NormalInput.from(data),
+                python = python,
+                script = script
+            ),
+            setProcessBuilder(
+                data = RemodelingInput.from(data),
+                python = python,
+                script = script
+            )
+        )
+    }
+
+    private fun <T> setProcessBuilder(data: T, python: String, script: String): ProcessBuilder {
         val tmpFile: File = fileService.writeTmpFile(data)
         log.info { "file : ${tmpFile.absolutePath}" }
 
-        return ProcessBuilder(pythonDir, pythonScript, tmpFile.absolutePath)
+        return ProcessBuilder(python, script, tmpFile.absolutePath)
             .redirectErrorStream(true)
     }
 

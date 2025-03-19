@@ -1,15 +1,12 @@
 package kr.co.beghsimulator.service
 
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kr.co.beghsimulator.dto.request.SimulateRequest
 import kr.co.beghsimulator.dto.response.SimulateResponse
-import kr.co.beghsimulator.simulator.input.Geometry
-import kr.co.beghsimulator.dto.response.SimulateResult
-import kr.co.beghsimulator.simulator.ISimulator
-import kr.co.beghsimulator.simulator.output.IOutput
+import kr.co.beghsimulator.dto.request.BuildingRequest
+import kr.co.beghsimulator.simulator.output.SimulateResult
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -20,20 +17,23 @@ class SimulateService(
 ) {
     private val log = KotlinLogging.logger { }
 
-    fun simulate(request: SimulateRequest): SimulateResponse = runBlocking {
-        val data: Geometry = fileService.readFile(request.absolutePath, Geometry::class.java)
+    fun execute(request: SimulateRequest): SimulateResponse = runBlocking {
+        val data: BuildingRequest = fileService.readFile(request.absolutePath, BuildingRequest::class.java)
 
-        val results: List<IOutput> = runBlocking {
+        val simulateResults: List<IOutput> = simulateAll(data)
+        val result: SimulateResult = SimulateResult.from(simulateResults)
+
+        val resultFile = fileService.writeFile(result)
+        return@runBlocking SimulateResponse.from(resultFile)
+    }
+
+    private suspend fun simulateAll(data: BuildingRequest): List<IOutput> {
+        return runBlocking {
             simulators.map { simulator ->
                 async {
                     simulator.execute(data)
                 }
             }
         }.awaitAll()
-
-        val result = SimulateResult.from(results)
-        val resultFile = fileService.writeFile(result)
-
-        return@runBlocking SimulateResponse.from(resultFile)
     }
 }
