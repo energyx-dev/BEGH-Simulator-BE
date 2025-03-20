@@ -1,8 +1,11 @@
 package kr.co.beghsimulator.dto.request
 
-import jakarta.validation.constraints.NotBlank
 
 data class SimulateRequest(
-    @NotBlank
-    val absolutePath: String
+    val address: String?,
+    val name: String?,
+    val northAxis: Int?,
+    val terrain: String?,
+    val weather: String?,
+    val building: BuildingRequest
 )

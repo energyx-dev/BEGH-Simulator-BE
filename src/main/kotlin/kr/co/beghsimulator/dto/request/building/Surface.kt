@@ -1,4 +1,4 @@
-package kr.co.beghsimulator.simulator.input.building
+package kr.co.beghsimulator.dto.request.building
 
 data class Surface(
     val adjZone: String?,

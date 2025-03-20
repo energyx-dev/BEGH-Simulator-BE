@@ -1,7 +1,7 @@
 package kr.co.beghsimulator.controller
 
 import jakarta.validation.Valid
-import kr.co.beghsimulator.dto.request.SimulateRequest
+import kr.co.beghsimulator.dto.request.SimulatePathRequest
 import kr.co.beghsimulator.dto.response.SimulateResponse
 import kr.co.beghsimulator.service.SimulateService
 import org.springframework.http.ResponseEntity
@@ -15,7 +15,7 @@ class SimulateController(
     private val simulateService: SimulateService
 ) {
     @PostMapping
-    fun simulate(@Valid request: SimulateRequest) : ResponseEntity<SimulateResponse> {
+    fun simulate(@Valid request: SimulatePathRequest) : ResponseEntity<SimulateResponse> {
         val result = simulateService.execute(request)
 
         return ResponseEntity.ok(result)
