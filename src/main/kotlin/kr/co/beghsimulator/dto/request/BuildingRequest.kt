@@ -1,6 +1,6 @@
 package kr.co.beghsimulator.dto.request
 
-import kr.co.beghsimulator.simulator.input.building.Floor
+import kr.co.beghsimulator.dto.request.building.Floor
 
 data class BuildingRequest(
     val floors: List<Floor?>?,

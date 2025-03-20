@@ -1,17 +1,17 @@
 package kr.co.beghsimulator.simulator.input
 
-import kr.co.beghsimulator.dto.request.BuildingRequest
-import kr.co.beghsimulator.simulator.input.building.Floor
+import kr.co.beghsimulator.dto.request.SimulateRequest
+import kr.co.beghsimulator.dto.request.building.Floor
 
 data class NormalInput(
     val name: String?,
     val floors: List<Floor?>?
 ) {
     companion object {
-        fun from(buildingRequest: BuildingRequest): NormalInput {
+        fun from(request: SimulateRequest): NormalInput {
             return NormalInput(
-                name = buildingRequest.name,
-                floors = buildingRequest.floors
+                name = request.name,
+                floors = request.building.floors
             )
         }
     }
