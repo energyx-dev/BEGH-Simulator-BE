@@ -23,4 +23,13 @@ object PythonUtil {
         val dir = "$curDir/python/simulator.py"
         return dir.replace('/', File.separatorChar)
     }
+
+    fun getFileProcessBuilders(filePaths: List<String>) : List<ProcessBuilder> {
+        val python = getPython()
+        val script = getScript()
+
+        return filePaths.map { filePath ->
+            ProcessBuilder(python, script, filePath)
+        }
+    }
 }
