@@ -8,7 +8,6 @@ import kr.co.beghsimulator.simulator.input.NormalInput
 import kr.co.beghsimulator.simulator.input.RemodelingInput
 import kr.co.beghsimulator.simulator.output.Building
 import kr.co.beghsimulator.simulator.output.BuildingOutput
-import kr.co.beghsimulator.simulator.util.PythonUtil
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -20,21 +19,19 @@ class RemodelingSimulator(
     private val log = KotlinLogging.logger { }
 
     override fun execute(request: SimulateRequest): BuildingOutput {
-        val processBuilders: List<ProcessBuilder> = setProcessBuilders(request)
+        val processBuilders: List<ProcessBuilder> = getRequestProcessBuilders(request)
 
         val results: List<String> = processService.executeAll(processBuilders)
 
         return analyze(results)
     }
 
-    override fun setProcessBuilders(request: SimulateRequest): List<ProcessBuilder> {
+    private fun getRequestProcessBuilders(request: SimulateRequest): List<ProcessBuilder> {
         return processService.getProcessBuilders(
             inputs = listOf(
                 NormalInput.from(request),
                 RemodelingInput.from(request)
-            ),
-            python = PythonUtil.getPython(),
-            script = PythonUtil.getScript()
+            )
         )
     }
 

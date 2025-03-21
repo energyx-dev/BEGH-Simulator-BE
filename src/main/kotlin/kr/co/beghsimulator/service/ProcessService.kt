@@ -1,10 +1,10 @@
 package kr.co.beghsimulator.service
 
 import kotlinx.coroutines.*
+import kr.co.beghsimulator.simulator.util.PythonUtil
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
 
 @Service
@@ -13,18 +13,10 @@ class ProcessService(
 ) {
     val log = KotlinLogging.logger { }
 
-    fun getProcessBuilders(inputs: List<Any>, python: String, script: String): List<ProcessBuilder> {
-        return inputs.map { input ->
-            setProcessBuilder(input, python, script)
-        }
-    }
+    fun getProcessBuilders(inputs: List<Any>): List<ProcessBuilder> {
+        val tmpFilePaths = inputs.map { input -> fileService.writeFile(input).absolutePath }
 
-    fun <T> setProcessBuilder(input: T, python: String, script: String,): ProcessBuilder {
-        val tmpFile: File = fileService.writeTmpFile(input)
-        log.info { "file : ${tmpFile.absolutePath}" }
-
-        return ProcessBuilder(python, script, tmpFile.absolutePath)
-            .redirectErrorStream(true)
+        return PythonUtil.getFileProcessBuilders(tmpFilePaths)
     }
 
     fun executeAll(processBuilders: List<ProcessBuilder>): List<String> = runBlocking {

@@ -13,8 +13,4 @@ class CostSimulator (
     override fun execute(request: SimulateRequest): CostOutput {
         return CostOutput.from(BigDecimal.TEN, BigDecimal.ONE)
     }
-
-    override fun setProcessBuilders(request: SimulateRequest): List<ProcessBuilder> {
-        return listOf()
-    }
 }
