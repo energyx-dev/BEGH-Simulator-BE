@@ -1,7 +1,6 @@
 package kr.co.beghsimulator.service
 
 import kotlinx.coroutines.*
-import kr.co.beghsimulator.simulator.util.PythonUtil
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.io.BufferedReader
@@ -9,15 +8,9 @@ import java.io.InputStreamReader
 
 @Service
 class ProcessService(
-    private val fileService: FileService
+
 ) {
     val log = KotlinLogging.logger { }
-
-    fun getProcessBuilders(inputs: List<Any>): List<ProcessBuilder> {
-        val tmpFilePaths = inputs.map { input -> fileService.writeFile(input).absolutePath }
-
-        return PythonUtil.getFileProcessBuilders(tmpFilePaths)
-    }
 
     fun executeAll(processBuilders: List<ProcessBuilder>): List<String> = runBlocking {
         processBuilders.map { processBuilder ->
@@ -39,11 +32,11 @@ class ProcessService(
 
             val exitCode: Int = process.waitFor()
             when (exitCode) {
-                0 -> println("Python 실행 완료")
-                else -> throw RuntimeException("Python 실행 중 오류 발생 (코드: $exitCode)")
+                0 -> log.info { "프로세스 실행 완료" }
+                else -> throw RuntimeException("프로세스 실행 중 오류 발생 (코드: $exitCode)")
             }
         }
 
-        return resultFilePath ?: throw RuntimeException("Python 실행 결과 오류")
+        return resultFilePath ?: throw RuntimeException("프로세스 실행 결과 오류")
     }
 }

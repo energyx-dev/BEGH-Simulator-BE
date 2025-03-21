@@ -24,7 +24,7 @@ object PythonUtil {
         return dir.replace('/', File.separatorChar)
     }
 
-    fun getFileProcessBuilders(filePaths: List<String>) : List<ProcessBuilder> {
+    fun getProcessBuilders(filePaths: List<String>) : List<ProcessBuilder> {
         val python = getPython()
         val script = getScript()
 
