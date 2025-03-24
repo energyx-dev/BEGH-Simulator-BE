@@ -1,4 +1,4 @@
-package kr.co.beghsimulator.simulator.util
+package kr.co.beghsimulator.common.util
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

@@ -20,26 +20,11 @@ class FileService(
 
     fun <T> writeFile(result: T) : File {
         val currentDir = System.getProperty("user.dir")
-        val fileName = "output_${System.currentTimeMillis()}.json"
+        val fileName = "output_${UUID.randomUUID()}.json"
 
         val jsonFile = File(currentDir, fileName)
-
-        if (!jsonFile.exists()) {
-            jsonFile.createNewFile()
-        }
-
         jsonFile.writeText(objectMapper.writeValueAsString(result))
 
         return jsonFile
-    }
-
-    fun <T> writeTmpFile(result: T): File {
-        val currentDir = System.getProperty("user.dir")
-        val fileName = "${UUID.randomUUID()}.json"
-
-        val tmpFile = File.createTempFile(currentDir, fileName)
-        tmpFile.writeText(objectMapper.writeValueAsString(result))
-
-        return tmpFile
     }
 }
