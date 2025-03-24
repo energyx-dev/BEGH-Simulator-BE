@@ -12,6 +12,7 @@ import kr.co.beghsimulator.simulator.output.BuildingOutput
 import kr.co.beghsimulator.simulator.util.PythonUtil
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
+import java.io.File
 
 @Component
 class RemodelingSimulator(
@@ -25,7 +26,7 @@ class RemodelingSimulator(
 
         val inputFilePaths: List<String> = saveInputs(inputs)
 
-        val processBuilders: List<ProcessBuilder> = PythonUtil.getProcessBuilders(inputFilePaths)
+        val processBuilders: List<ProcessBuilder> = PythonUtil.getProcessBuilders(inputFilePaths, getPythonScript())
 
         val outputFilePaths: List<String> = processService.executeAll(processBuilders)
 
@@ -41,6 +42,12 @@ class RemodelingSimulator(
 
     private fun saveInputs(inputs: List<IInput>): List<String> {
         return inputs.map { input -> fileService.writeFile(input).absolutePath }
+    }
+
+    private fun getPythonScript(): String {
+        val curDir = System.getProperty("user.dir")
+        val scriptDir = "$curDir/python/simulator.py"
+        return scriptDir.replace('/', File.separatorChar)
     }
 
     private fun analyze(paths: List<String>): BuildingOutput {

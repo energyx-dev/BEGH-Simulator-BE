@@ -1,9 +1,17 @@
 package kr.co.beghsimulator.simulator.util
 
-import java.io.File
 
 object PythonUtil {
-    fun getPython(): String {
+
+    fun getProcessBuilders(filePaths: List<String>, script: String): List<ProcessBuilder> {
+        val python = getPython()
+
+        return filePaths.map { filePath ->
+            ProcessBuilder(python, script, filePath)
+        }
+    }
+
+    private fun getPython(): String {
         val curDir = System.getProperty("user.dir")
         val osName = System.getProperty("os.name").lowercase()
 
@@ -16,20 +24,5 @@ object PythonUtil {
         }
 
         throw RuntimeException("win 배포 환경, mac 개발 환경에서만 실행이 가능합니다.")
-    }
-
-    fun getScript(): String {
-        val curDir = System.getProperty("user.dir")
-        val dir = "$curDir/python/simulator.py"
-        return dir.replace('/', File.separatorChar)
-    }
-
-    fun getProcessBuilders(filePaths: List<String>) : List<ProcessBuilder> {
-        val python = getPython()
-        val script = getScript()
-
-        return filePaths.map { filePath ->
-            ProcessBuilder(python, script, filePath)
-        }
     }
 }
