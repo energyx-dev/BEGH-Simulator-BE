@@ -1,10 +1,13 @@
 package kr.co.beghsimulator.simulator
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import kr.co.beghsimulator.dto.request.SimulateRequest
 import kr.co.beghsimulator.service.FileService
 import kr.co.beghsimulator.service.IInput
 import kr.co.beghsimulator.service.ISimulator
-import kr.co.beghsimulator.service.ProcessService
 import kr.co.beghsimulator.simulator.input.NormalInput
 import kr.co.beghsimulator.simulator.input.RemodelingInput
 import kr.co.beghsimulator.simulator.output.Building
@@ -16,8 +19,7 @@ import java.io.File
 
 @Component
 class RemodelingSimulator(
-    val fileService: FileService,
-    val processService: ProcessService
+    val fileService: FileService
 ) : ISimulator {
     private val log = KotlinLogging.logger { }
 
@@ -26,11 +28,19 @@ class RemodelingSimulator(
 
         val inputFilePaths: List<String> = saveInputs(inputs)
 
-        val processBuilders: List<ProcessBuilder> = PythonUtil.getProcessBuilders(inputFilePaths, getPythonScript())
-
-        val outputFilePaths: List<String> = processService.executeAll(processBuilders)
+        val outputFilePaths: List<String> = executeSimulator(inputFilePaths, getSimulatorScript())
 
         return analyze(outputFilePaths)
+    }
+
+    private fun executeSimulator(inputFilePaths: List<String>, script: String): List<String> {
+        return runBlocking {
+            inputFilePaths.map { inputFile ->
+                async(Dispatchers.IO) {
+                    PythonUtil.execute(script = script, input = inputFile)
+                }
+            }.awaitAll()
+        }
     }
 
     private fun getInputs(request: SimulateRequest): List<IInput> {
@@ -44,7 +54,7 @@ class RemodelingSimulator(
         return inputs.map { input -> fileService.writeFile(input).absolutePath }
     }
 
-    private fun getPythonScript(): String {
+    private fun getSimulatorScript(): String {
         val curDir = System.getProperty("user.dir")
         val scriptDir = "$curDir/python/simulator.py"
         return scriptDir.replace('/', File.separatorChar)
