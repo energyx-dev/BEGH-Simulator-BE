@@ -1,24 +1,17 @@
-package kr.co.beghsimulator.service
+package kr.co.beghsimulator.simulator.util
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import org.springframework.stereotype.Service
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-@Service
-class ProcessService(
+object ProcessUtil {
+    private val log = KotlinLogging.logger { }
 
-) {
-    val log = KotlinLogging.logger { }
+    suspend fun execute(vararg commend: String): String {
+        val processBuilder = ProcessBuilder(*commend)
 
-    fun executeAll(processBuilders: List<ProcessBuilder>): List<String> = runBlocking {
-        processBuilders.map { processBuilder ->
-            async(Dispatchers.IO) { execute(processBuilder) }
-        }.awaitAll()
-    }
-
-    private suspend fun execute(processBuilder: ProcessBuilder): String {
         var resultFilePath: String? = null
 
         withContext(Dispatchers.IO) {
@@ -39,4 +32,5 @@ class ProcessService(
 
         return resultFilePath ?: throw RuntimeException("프로세스 실행 결과 오류")
     }
+
 }

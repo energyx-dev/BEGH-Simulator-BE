@@ -2,13 +2,8 @@ package kr.co.beghsimulator.simulator.util
 
 
 object PythonUtil {
-
-    fun getProcessBuilders(filePaths: List<String>, script: String): List<ProcessBuilder> {
-        val python = getPython()
-
-        return filePaths.map { filePath ->
-            ProcessBuilder(python, script, filePath)
-        }
+    suspend fun execute(script: String, input: String): String {
+        return ProcessUtil.execute(getPython(), script, input)
     }
 
     private fun getPython(): String {
