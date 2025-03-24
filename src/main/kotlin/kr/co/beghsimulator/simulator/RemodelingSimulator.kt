@@ -6,52 +6,38 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kr.co.beghsimulator.dto.request.SimulateRequest
 import kr.co.beghsimulator.service.FileService
-import kr.co.beghsimulator.service.IInput
 import kr.co.beghsimulator.service.ISimulator
-import kr.co.beghsimulator.simulator.input.NormalInput
-import kr.co.beghsimulator.simulator.input.RemodelingInput
 import kr.co.beghsimulator.simulator.output.Building
 import kr.co.beghsimulator.simulator.output.BuildingOutput
-import kr.co.beghsimulator.simulator.util.PythonUtil
+import kr.co.beghsimulator.common.util.PythonUtil
+import kr.co.beghsimulator.simulator.Remodeling.RemodelingSimulatorInput
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.io.File
 
 @Component
 class RemodelingSimulator(
-    val fileService: FileService
+    private val fileService: FileService,
+    private val remodelingSimulatorInput: RemodelingSimulatorInput
 ) : ISimulator {
     private val log = KotlinLogging.logger { }
 
     override fun execute(request: SimulateRequest): BuildingOutput {
-        val inputs: List<IInput> = getInputs(request)
+        val simulatorInputs = remodelingSimulatorInput.getInputs(request)
 
-        val inputFilePaths: List<String> = saveInputs(inputs)
+        val outputs: List<String> = executeSimulator(simulatorInputs, getSimulatorScript())
 
-        val outputFilePaths: List<String> = executeSimulator(inputFilePaths, getSimulatorScript())
-
-        return analyze(outputFilePaths)
+        return analyze(outputs)
     }
 
-    private fun executeSimulator(inputFilePaths: List<String>, script: String): List<String> {
+    private fun executeSimulator(inputs: List<String>, script: String): List<String> {
         return runBlocking {
-            inputFilePaths.map { inputFile ->
+            inputs.map { input ->
                 async(Dispatchers.IO) {
-                    PythonUtil.execute(script = script, input = inputFile)
+                    PythonUtil.execute(script = script, input = input)
                 }
             }.awaitAll()
         }
-    }
-
-    private fun getInputs(request: SimulateRequest): List<IInput> {
-        return listOf(
-            NormalInput.from(request),
-            RemodelingInput.from(request)
-        )
-    }
-
-    private fun saveInputs(inputs: List<IInput>): List<String> {
-        return inputs.map { input -> fileService.writeFile(input).absolutePath }
     }
 
     private fun getSimulatorScript(): String {
@@ -60,14 +46,14 @@ class RemodelingSimulator(
         return scriptDir.replace('/', File.separatorChar)
     }
 
-    private fun analyze(paths: List<String>): BuildingOutput {
+    private fun analyze(outputs: List<String>): BuildingOutput {
         val results = mutableListOf<Building>()
 
-        paths.forEach { path ->
+        outputs.forEach { path ->
             val result: Building = fileService.readFile(path, Building::class.java)
             results.add(result)
         }
 
-        return BuildingOutput.from(results, paths)
+        return BuildingOutput.from(results, outputs)
     }
 }
