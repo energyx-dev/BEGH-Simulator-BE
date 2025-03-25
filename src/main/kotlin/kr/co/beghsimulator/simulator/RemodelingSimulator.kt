@@ -25,9 +25,9 @@ class RemodelingSimulator(
     override fun execute(request: SimulateRequest): BuildingOutput {
         val simulatorInputs = remodelingSimulatorInput.getInputs(request)
 
-        val outputs: List<String> = executeSimulator(simulatorInputs, getSimulatorScript())
+        val simulatorOutputs: List<String> = executeSimulator(simulatorInputs, getSimulatorScript())
 
-        return analyze(outputs)
+        return analyze(simulatorOutputs)
     }
 
     private fun executeSimulator(inputs: List<String>, script: String): List<String> {
